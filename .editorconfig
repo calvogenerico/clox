@@ -1,0 +1,9 @@
+[*.c]
+tab_width = 2
+indent_size = 2
+indent_style = space
+
+[*.h]
+tab_width = 2
+indent_size = 2
+indent_style = space
