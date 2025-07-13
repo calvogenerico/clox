@@ -7,11 +7,11 @@
 VM vm;
 
 static void resetStack() {
-  vm.stackTop = vm.stack;
+    vm.stackTop = vm.stack;
 }
 
 void initVM() {
-  resetStack();
+    resetStack();
 }
 
 void freeVM() {
@@ -20,11 +20,17 @@ void freeVM() {
 static InterpretResult run() {
 #define READ_BYTE() (*vm.ip++)
 #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
+#define BINARY_OP(op) \
+    do { \
+      double right = pop(); \
+      double left = pop();  \
+      push(left op right); \
+    } while (false)
 
     for (;;) {
-        #ifdef DEBUG_TRACE_EXECUTION
+#ifdef DEBUG_TRACE_EXECUTION
         printf("          ");
-        for (Value* slot = vm.stack; slot < vm.stackTop; slot++) {
+        for (Value *slot = vm.stack; slot < vm.stackTop; slot++) {
             printf("[ ");
             printValue(*slot);
             printf(" ]");
@@ -32,9 +38,9 @@ static InterpretResult run() {
         printf("\n");
         disassembleInstruction(
             vm.chunk,
-            (int)(vm.ip - vm.chunk->code)
+            (int) (vm.ip - vm.chunk->code)
         );
-        #endif
+#endif
 
         uint8_t instruction;
         switch (instruction = READ_BYTE()) {
@@ -43,14 +49,26 @@ static InterpretResult run() {
                 push(constant);
                 break;
             }
-            case OP_NEGATE: {
-                push(-pop());
-                break;
-            }
             case OP_RETURN: {
                 printValue(pop());
                 printf("\n");
                 return INTERPRET_OK;
+            }
+            case OP_ADD:
+                BINARY_OP(+);
+                break;
+            case OP_SUBTRACT:
+                BINARY_OP(-);
+                break;
+            case OP_MULTIPLY:
+                BINARY_OP(*);
+                break;
+            case OP_DIVIDE:
+                BINARY_OP(/);
+                break;
+            case OP_NEGATE: {
+                push(-pop());
+                break;
             }
         }
     }
@@ -60,8 +78,8 @@ static InterpretResult run() {
 }
 
 void push(Value value) {
-  *vm.stackTop = value;
-  vm.stackTop++;
+    *vm.stackTop = value;
+    vm.stackTop++;
 }
 
 Value pop() {
@@ -69,7 +87,7 @@ Value pop() {
     return *vm.stackTop;
 }
 
-InterpretResult interpret(Chunk* chunk) {
+InterpretResult interpret(Chunk *chunk) {
     vm.chunk = chunk;
     vm.ip = vm.chunk->code;
     return run();
