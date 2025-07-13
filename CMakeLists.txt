@@ -6,6 +6,8 @@ set(CMAKE_C_STANDARD 11)
 add_executable(clox main.c
         chunk.c
         chunk.h
+        compiler.h
+        compiler.c
         memory.h
         memory.c
         debug.h
@@ -14,4 +16,6 @@ add_executable(clox main.c
         value.c
         vm.h
         vm.c
-        vm.h)
+        vm.h
+        scanner.h
+        scanner.c)
