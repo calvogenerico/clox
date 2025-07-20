@@ -1,9 +1,9 @@
 [*.c]
-tab_width = 2
-indent_size = 2
+tab_width = 4
+indent_size = 4
 indent_style = space
 
 [*.h]
-tab_width = 2
-indent_size = 2
+tab_width = 4
+indent_size = 4
 indent_style = space
