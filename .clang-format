@@ -5,6 +5,7 @@ BasedOnStyle: LLVM
 
 IndentWidth: 4
 
+IndentCaseLabels: true
 BraceWrapping:
   AfterClass: false
   AfterControlStatement: false

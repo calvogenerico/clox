@@ -16,6 +16,9 @@ typedef enum {
     OP_SUBTRACT,
     OP_MULTIPLY,
     OP_DIVIDE,
+    OP_EQUAL,
+    OP_GREATER,
+    OP_LESS,
     // Unary Operations
     OP_NOT,
     OP_NEGATE,
