@@ -17,6 +17,7 @@ typedef enum {
     OP_MULTIPLY,
     OP_DIVIDE,
     // Unary Operations
+    OP_NOT,
     OP_NEGATE,
 } OpCode;
 
