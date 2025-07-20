@@ -6,7 +6,7 @@
 #include "memory.h"
 
 void printValue(Value value) {
-    printf("%g", value);
+    printf("%g", AS_NUMBER(value));
 }
 
 void initValueArray(ValueArray *array) {
