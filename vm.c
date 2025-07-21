@@ -1,18 +1,21 @@
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "common.h"
 #include "compiler.h"
 #include "debug.h"
 #include "value.h"
 #include "vm.h"
+#include "object.h"
+
 
 VM vm;
 static Value peek(int distance);
 
 static void resetStack() { vm.stackTop = vm.stack; }
 
-static void runtimeError(const char *format, ...) {
+static void runtimeError(const char* format, ...) {
     va_list args;
     va_start(args, format);
     vfprintf(stderr, format, args);
@@ -34,12 +37,22 @@ bool isFalsey(Value val) {
 }
 
 bool valuesEqual(Value a, Value b) {
-    if (a.type != b.type) return false;
+    if (a.type != b.type)
+        return false;
     switch (a.type) {
-        case VAL_NUMBER: return AS_NUMBER(a) == AS_NUMBER(b);
-        case VAL_BOOL: return AS_BOOL(a) == AS_BOOL(b);
-        case VAL_NIL: return true;
-        default: return false; // unreachable
+        case VAL_NUMBER:
+            return AS_NUMBER(a) == AS_NUMBER(b);
+        case VAL_BOOL:
+            return AS_BOOL(a) == AS_BOOL(b);
+        case VAL_NIL:
+            return true;
+        case VAL_OBJ:
+            ObjString* aString = AS_STRING(a);
+            ObjString* bString = AS_STRING(b);
+            return aString->length == bString->length &&
+                   memcmp(aString->chars, bString->chars, aString->length) == 0;
+        default:
+            return false; // unreachable
     }
 };
 
@@ -60,7 +73,7 @@ static InterpretResult run() {
     for (;;) {
 #ifdef DEBUG_TRACE_EXECUTION
         printf("          ");
-        for (Value *slot = vm.stack; slot < vm.stackTop; slot++) {
+        for (Value* slot = vm.stack; slot < vm.stackTop; slot++) {
             printf("[ ");
             printValue(*slot);
             printf(" ]");
@@ -143,7 +156,7 @@ Value pop() {
 
 static Value peek(int distance) { return vm.stackTop[-1 - distance]; }
 
-InterpretResult interpret(const char *source) {
+InterpretResult interpret(const char* source) {
     Chunk chunk;
     initChunk(&chunk);
 

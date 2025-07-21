@@ -4,6 +4,9 @@
 BasedOnStyle: LLVM
 
 IndentWidth: 4
+SpacesInContainerLiterals: true
+Cpp11BracedListStyle: false
+PointerAlignment: Left
 
 IndentCaseLabels: true
 BraceWrapping:
