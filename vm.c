@@ -5,10 +5,11 @@
 #include "common.h"
 #include "compiler.h"
 #include "debug.h"
+#include "object.h"
 #include "value.h"
 #include "vm.h"
-#include "object.h"
 
+#include "memory.h"
 
 VM vm;
 static Value peek(int distance);
@@ -34,6 +35,20 @@ void freeVM() {}
 
 bool isFalsey(Value val) {
     return IS_NIL(val) || (IS_BOOL(val) && !AS_BOOL(val));
+}
+
+void concatenate() {
+    ObjString* b = AS_STRING(pop());
+    ObjString* a = AS_STRING(pop());
+
+    int length = a->length + b->length;
+    char* chars = ALLOCATE(char, length);
+    memcpy(chars, a->chars, a->length);
+    memcpy(chars + a->length, b->chars, b->length);
+    chars[length] = '\0';
+
+    ObjString* result = takeString(chars, length);
+    push(OBJ_VAL(result));
 }
 
 bool valuesEqual(Value a, Value b) {
@@ -115,7 +130,16 @@ static InterpretResult run() {
                 BINARY_OP(BOOL_VAL, >);
                 break;
             case OP_ADD:
-                BINARY_OP(BOOL_VAL, +);
+                if (IS_STRING(peek(0)) && IS_STRING(peek(1))) {
+                    concatenate();
+                } else if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1))) {
+                    double a = AS_NUMBER(pop());
+                    double b = AS_NUMBER(pop());
+                    push(NUMBER_VAL(a + b));
+                } else {
+                    runtimeError("Both operans for '+' have to be of the same type");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
                 break;
             case OP_SUBTRACT:
                 BINARY_OP(NUMBER_VAL, -);
