@@ -6,6 +6,8 @@
 #include "table.h"
 #include "value.h"
 
+#include <stdio.h>
+
 #define TABLE_MAX_LOAD 0.75
 
 static Entry* findEntry(Entry* entries, int capacity, ObjString* key) {
@@ -61,7 +63,7 @@ static void adjustCapacity(Table* table, int capacity) {
 
 void initTable(Table* table) {
     table->count = 0;
-    table->capacity = 8;
+    table->capacity = 0;
     table->entries = NULL;
 }
 

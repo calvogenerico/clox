@@ -83,7 +83,6 @@ static InterpretResult run() {
         printf("\n");
         disassembleInstruction(vm.chunk, (int)(vm.ip - vm.chunk->code));
 #endif
-
         uint8_t instruction;
         switch (instruction = READ_BYTE()) {
             case OP_CONSTANT: {
@@ -92,8 +91,6 @@ static InterpretResult run() {
                 break;
             }
             case OP_RETURN: {
-                printValue(pop());
-                printf("\n");
                 return INTERPRET_OK;
             }
             case OP_NIL:
@@ -147,6 +144,11 @@ static InterpretResult run() {
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 push(NUMBER_VAL(-AS_NUMBER(pop())));
+                break;
+            }
+            case OP_PRINT: {
+                printValue(pop());
+                printf("\n");
                 break;
             }
         }

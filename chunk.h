@@ -22,6 +22,7 @@ typedef enum {
     // Unary Operations
     OP_NOT,
     OP_NEGATE,
+    OP_PRINT,
 } OpCode;
 
 typedef struct {
