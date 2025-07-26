@@ -49,4 +49,6 @@ void writeValueArray(ValueArray *array, Value value);
 
 void freeValueArray(ValueArray *array);
 
+bool valuesEqual(Value a, Value b);
+
 #endif // clox_value_h

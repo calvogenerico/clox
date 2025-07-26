@@ -32,9 +32,11 @@ static void runtimeError(const char* format, ...) {
 void initVM() {
     resetStack();
     vm.objects = NULL;
+    initTable(&vm.strings);
 }
 
 void freeVM() {
+    freeTable(&vm.strings);
     freeObjects();
 }
 
@@ -55,26 +57,6 @@ void concatenate() {
     ObjString* result = takeString(chars, length);
     push(OBJ_VAL(result));
 }
-
-bool valuesEqual(Value a, Value b) {
-    if (a.type != b.type)
-        return false;
-    switch (a.type) {
-        case VAL_NUMBER:
-            return AS_NUMBER(a) == AS_NUMBER(b);
-        case VAL_BOOL:
-            return AS_BOOL(a) == AS_BOOL(b);
-        case VAL_NIL:
-            return true;
-        case VAL_OBJ:
-            ObjString* aString = AS_STRING(a);
-            ObjString* bString = AS_STRING(b);
-            return aString->length == bString->length &&
-                   memcmp(aString->chars, bString->chars, aString->length) == 0;
-        default:
-            return false; // unreachable
-    }
-};
 
 static InterpretResult run() {
 #define READ_BYTE() (*vm.ip++)
@@ -142,7 +124,8 @@ static InterpretResult run() {
                     double b = AS_NUMBER(pop());
                     push(NUMBER_VAL(a + b));
                 } else {
-                    runtimeError("Both operans for '+' have to be of the same type");
+                    runtimeError(
+                        "Both operans for '+' have to be of the same type");
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 break;
