@@ -14,6 +14,7 @@ typedef enum {
     OP_POP,
     OP_DEFINE_GLOBAL,
     OP_GET_GLOBAL,
+    OP_SET_GLOBAL,
     // Binary operations
     OP_ADD,
     OP_SUBTRACT,
