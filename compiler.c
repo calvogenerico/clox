@@ -52,6 +52,7 @@ static void literal();
 static void expression();
 static void statement();
 static void declaration();
+static void variable();
 
 // clang-format off
 ParseRule rules[] = {
@@ -74,7 +75,7 @@ ParseRule rules[] = {
     [TOKEN_GREATER_EQUAL] = {NULL       , binary, PREC_COMPARISON},
     [TOKEN_LESS]          = {NULL       , binary, PREC_COMPARISON},
     [TOKEN_LESS_EQUAL]    = {NULL       , binary, PREC_COMPARISON},
-    [TOKEN_IDENTIFIER]    = {NULL       , NULL, PREC_NONE},
+    [TOKEN_IDENTIFIER]    = {variable       , NULL, PREC_NONE},
     [TOKEN_STRING]        = {string       , NULL, PREC_NONE},
     [TOKEN_NUMBER]        = {number     , NULL, PREC_NONE},
     [TOKEN_AND]           = {NULL       , NULL, PREC_NONE},
@@ -150,9 +151,7 @@ static void consume(TokenType type, const char* message) {
     errorAtCurrent(message);
 }
 
-static bool check(TokenType type) {
-    return parser.current.type == type;
-}
+static bool check(TokenType type) { return parser.current.type == type; }
 
 static bool match(TokenType type) {
     if (!check(type))
@@ -193,6 +192,10 @@ static void endCompiler() {
     }
 #endif
     emitReturn();
+}
+
+static uint8_t identifierConstant(Token* name) {
+    return makeConstant(OBJ_VAL(copyString(name->start, name->length)));
 }
 
 static ParseRule* getRule(TokenType type) { return &rules[type]; }
@@ -272,6 +275,13 @@ static void string() {
         copyString(parser.previous.start + 1, parser.previous.length - 2)));
 }
 
+static void namedVariable(Token name) {
+    uint8_t arg = identifierConstant(&name);
+    emitBytes(OP_GET_GLOBAL, arg);
+}
+
+static void variable() { namedVariable(parser.previous); }
+
 static void literal() {
     switch (parser.previous.type) {
         case TOKEN_TRUE:
@@ -320,7 +330,8 @@ static void synchronize() {
     parser.panicMode = false;
 
     while (parser.current.type != TOKEN_EOF) {
-        if (parser.previous.type == TOKEN_SEMICOLON) return;
+        if (parser.previous.type == TOKEN_SEMICOLON)
+            return;
         switch (parser.current.type) {
             case TOKEN_CLASS:
             case TOKEN_FUN:
@@ -332,8 +343,7 @@ static void synchronize() {
             case TOKEN_RETURN:
                 return;
 
-            default:
-                ; // Do nothing.
+            default:; // Do nothing.
         }
 
         advance();
@@ -354,11 +364,6 @@ static void statement() {
     }
 }
 
-static uint8_t identifierConstant(Token* name) {
-    return makeConstant(OBJ_VAL(copyString(name->start,
-                                           name->length)));
-}
-
 static uint8_t parseVariable(char* errorMsg) {
     consume(TOKEN_IDENTIFIER, errorMsg);
     return identifierConstant(&parser.previous);
@@ -377,8 +382,7 @@ static void varDeclaration() {
         emitByte(OP_NIL);
     }
 
-    consume(TOKEN_SEMICOLON,
-          "Expect ';' after variable declaration.");
+    consume(TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
     defineVariable(global);
 }
 
@@ -388,7 +392,8 @@ static void declaration() {
     } else {
         statement();
     }
-    if (parser.panicMode) synchronize();
+    if (parser.panicMode)
+        synchronize();
 }
 
 bool compile(const char* source, Chunk* chunk) {
