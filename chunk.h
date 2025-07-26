@@ -11,6 +11,7 @@ typedef enum {
     OP_TRUE,
     OP_FALSE,
     OP_RETURN,
+    OP_POP,
     // Binary operations
     OP_ADD,
     OP_SUBTRACT,
