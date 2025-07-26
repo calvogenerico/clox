@@ -1,5 +1,1 @@
-print "holu";
-print "holu2";
-print "holu3";
-print "holu4";
-print 1 + 10;
+var coso = "cosito";

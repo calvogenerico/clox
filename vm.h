@@ -14,6 +14,7 @@ typedef struct {
     Value* stackTop; // Points to where the next element is going to be
     Table strings;
     Obj* objects;
+    Table globals;
 } VM;
 
 extern VM vm;

@@ -12,6 +12,7 @@ typedef enum {
     OP_FALSE,
     OP_RETURN,
     OP_POP,
+    OP_DEFINE_GLOBAL,
     // Binary operations
     OP_ADD,
     OP_SUBTRACT,
