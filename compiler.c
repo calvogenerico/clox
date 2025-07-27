@@ -62,6 +62,7 @@ static void string(bool canAssign);
 static void literal(bool canAssign);
 static void variable(bool canAssign);
 static void and_(bool canAssign);
+static void or_(bool canAssign);
 
 static void expression();
 static void statement();
@@ -99,7 +100,7 @@ ParseRule rules[] = {
     [TOKEN_FUN]           = {NULL       , NULL, PREC_NONE},
     [TOKEN_IF]            = {NULL       , NULL, PREC_NONE},
     [TOKEN_NIL]           = {literal    , NULL, PREC_NONE},
-    [TOKEN_OR]            = {NULL       , NULL, PREC_NONE},
+    [TOKEN_OR]            = {NULL       , or_, PREC_OR},
     [TOKEN_PRINT]         = {NULL       , NULL, PREC_NONE},
     [TOKEN_RETURN]        = {NULL       , NULL, PREC_NONE},
     [TOKEN_SUPER]         = {NULL       , NULL, PREC_NONE},
@@ -563,6 +564,17 @@ static void and_(bool _canAssign) {
     emitByte(OP_POP);
     parsePrecedence(PREC_AND);
 
+    patchJump(endJump);
+}
+
+static void or_(bool _canAssign) {
+    int elseJump = emitJump(OP_JUMP_IF_FALSE);
+    int endJump = emitJump(OP_JUMP);
+
+    patchJump(elseJump);
+    emitByte(OP_POP);
+
+    parsePrecedence(PREC_OR);
     patchJump(endJump);
 }
 

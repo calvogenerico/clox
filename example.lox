@@ -1,9 +1,13 @@
-var a = true;
-if (a) {
-    print "holu";
-    print "holu2";
-} else {
-    print "holu3";
-    print "holu4";
+var a = 1;
+var b = 1;
+
+{
+ 1 + 1;
 }
-print "holu5";
+
+if (a = 2) {
+    print "then";
+} else {
+    print "else";
+}
+print a;
