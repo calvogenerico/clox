@@ -164,7 +164,7 @@ static InterpretResult run() {
                 push(BOOL_VAL(valuesEqual(a, b)));
                 break;
             case OP_LESS:
-                BINARY_OP(NUMBER_VAL, <);
+                BINARY_OP(BOOL_VAL, <);
                 break;
             case OP_GREATER:
                 BINARY_OP(BOOL_VAL, >);
