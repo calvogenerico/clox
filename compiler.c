@@ -255,6 +255,11 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
         current->function->name =
             copyString(parser.previous.start, parser.previous.length);
     }
+
+    Local* local = &current->locals[current->localCount++];
+    local->depth = 0;
+    local->name.start = "";
+    local->name.length = 0;
 }
 
 static ObjFunction* endCompiler() {
