@@ -6,6 +6,8 @@
 #include "value.h"
 #include "vm.h"
 
+#include <stdlib.h>
+
 static Obj* allocateObject(size_t size, ObjType type) {
     Obj* object = (Obj*)reallocate(NULL, 0, size);
     object->type = type;
@@ -35,6 +37,14 @@ static ObjString* allocateString(char* chars, int length, uint32_t hash) {
     return string;
 }
 
+ObjFunction* newFunction() {
+    ObjFunction* function = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
+    function->arity = 0;
+    function->name = NULL;
+    initChunk(&function->chunk);
+    return function;
+}
+
 ObjString* takeString(char* chars, int length) {
     uint32_t hash = hashString(chars, length);
     ObjString* interned = tableFindString(&vm.strings, chars, length,
@@ -55,4 +65,26 @@ ObjString* copyString(const char* chars, int length) {
     ObjString* interned = tableFindString(&vm.strings, chars, length, hash);
     if (interned) return interned;
     return allocateString(heapChars, length, hash);
+}
+
+static void printFunction(ObjFunction* fn) {
+    if (fn->name == NULL) {
+        printf("<script>");
+        return;
+    }
+    printf("<fn %s>", fn->name->chars);
+}
+
+void printObject(Value value) {
+    switch (OBJ_TYPE(value)) {
+        case OBJ_FUNCTION:
+            printFunction(AS_FUNCTION(value));
+            break;
+        case OBJ_STRING:
+            printf("%s", AS_CSTRING(value));
+            break;
+        default:
+            printf("Print for value: %d not implemented\n", value.type);
+            exit(1);
+    }
 }

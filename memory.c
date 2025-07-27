@@ -19,15 +19,19 @@ void* reallocate(void* pointer, size_t _oldSize, size_t newSize) {
     return result;
 }
 
-static void freeObject(Obj* obj) {
-    switch (obj->type) {
+static void freeObject(Obj* object) {
+    switch (object->type) {
         case OBJ_STRING:
-            ObjString* string = (ObjString*) obj;
+            ObjString* string = (ObjString*) object;
             FREE_ARRAY(char, string->chars, string->length + 1);
-            FREE(ObjString, obj);
+            FREE(ObjString, object);
             break;
+        case OBJ_FUNCTION:
+            ObjFunction* fn = (ObjFunction*) object;
+            freeChunk(&fn->chunk);
+            FREE(ObjFunction, object);
         default:
-            printf("Free not implemented for %d", obj->type);
+            printf("Free not implemented for %d", object->type);
             exit(1);
     }
 }

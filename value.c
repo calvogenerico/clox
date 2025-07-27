@@ -7,17 +7,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-void printObject(Value value) {
-    switch (OBJ_TYPE(value)) {
-        case OBJ_STRING:
-            printf("%s", AS_CSTRING(value));
-            break;
-        default:
-            printf("Print for value: %d not implemented\n", value.type);
-            exit(1);
-    }
-}
-
 void printValue(Value value) {
     switch (value.type) {
         case VAL_NUMBER:
