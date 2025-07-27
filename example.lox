@@ -1,9 +1,9 @@
-var coso = "aca soy esto";
-{
-  var coso = "pero aca soy esto otro";
-  var coso2 = "aaa";
-  coso2 = "nuevo";
-  var coso3 = "eee";
-  print coso + coso2 + coso3;
+var a = true;
+if (a) {
+    print "holu";
+    print "holu2";
+} else {
+    print "holu3";
+    print "holu4";
 }
-print coso;
+print "holu5";
