@@ -11,7 +11,13 @@
 
 #include "memory.h"
 
+#include <time.h>
+
 VM vm;
+
+static Value clockNative(int argCount, Value* args) {
+    return NUMBER_VAL((double)clock() / CLOCKS_PER_SEC);
+}
 
 static void resetStack() {
     vm.stackTop = vm.stack;
@@ -41,6 +47,14 @@ static void runtimeError(const char* format, ...) {
     resetStack();
 }
 
+static void defineNative(const char* name, NativeFn function) {
+    push(OBJ_VAL(copyString(name, (int)strlen(name))));
+    push(OBJ_VAL(newNative(function)));
+    tableSet(&vm.globals, AS_STRING(vm.stack[0]), vm.stack[1]);
+    pop();
+    pop();
+}
+
 static Value peek(int distance) { return vm.stackTop[-1 - distance]; }
 
 static bool call(ObjFunction* function, int argCount) {
@@ -65,8 +79,15 @@ static bool call(ObjFunction* function, int argCount) {
 static bool callValue(Value callee, int argCount) {
     if (IS_OBJ(callee)) {
         switch (OBJ_TYPE(callee)) {
-            case OBJ_FUNCTION:
+                case OBJ_FUNCTION:
                 return call(AS_FUNCTION(callee), argCount);
+            case OBJ_NATIVE: {
+                NativeFn native = AS_NATIVE(callee);
+                Value result = native(argCount, vm.stackTop - argCount);
+                vm.stackTop -= argCount + 1;
+                push(result);
+                return true;
+            }
             default:
                 break; // Non-callable object type.
         }
@@ -80,6 +101,8 @@ void initVM() {
     vm.objects = NULL;
     initTable(&vm.globals);
     initTable(&vm.strings);
+    // add native functions
+    defineNative("clock", clockNative);
 }
 
 void freeVM() {

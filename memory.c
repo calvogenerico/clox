@@ -31,6 +31,9 @@ static void freeObject(Obj* object) {
             freeChunk(&fn->chunk);
             FREE(ObjFunction, object);
             break;
+        case OBJ_NATIVE:
+            FREE(ObjNative, object);
+            break;
         default:
             printf("Free not implemented for %d", object->type);
             exit(1);
