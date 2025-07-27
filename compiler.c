@@ -68,6 +68,7 @@ static void literal(bool canAssign);
 static void variable(bool canAssign);
 static void and_(bool canAssign);
 static void or_(bool canAssign);
+static void call(bool canAssign);
 
 static void expression();
 static void statement();
@@ -79,7 +80,7 @@ static void defineVariable(uint8_t global);
 
 // clang-format off
 ParseRule rules[] = {
-    [TOKEN_LEFT_PAREN]    = {grouping   , NULL, PREC_NONE},
+    [TOKEN_LEFT_PAREN]    = {grouping   , call, PREC_CALL},
     [TOKEN_RIGHT_PAREN]   = {NULL       , NULL, PREC_NONE},
     [TOKEN_LEFT_BRACE]    = {NULL       , NULL, PREC_NONE},
     [TOKEN_RIGHT_BRACE]   = {NULL       , NULL, PREC_NONE},
@@ -704,6 +705,27 @@ static void or_(bool _canAssign) {
 
     parsePrecedence(PREC_OR);
     patchJump(endJump);
+}
+
+static uint8_t argumentList() {
+    uint8_t argCount = 0;
+    if (!check(TOKEN_RIGHT_PAREN)) {
+        do {
+            if (argCount == 255) {
+                error("Can't have more than 255 arguments.");
+            }
+            expression();
+            argCount++;
+        } while (match(TOKEN_COMMA));
+    }
+    consume(TOKEN_RIGHT_PAREN, "Expect ')' after arguments.");
+
+    return argCount;
+}
+
+static void call(bool canAssign) {
+    uint8_t argCount = argumentList();
+    emitBytes(OP_CALL, argCount);
 }
 
 static void varDeclaration() {
