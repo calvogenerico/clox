@@ -30,6 +30,7 @@ static void freeObject(Obj* object) {
             ObjFunction* fn = (ObjFunction*) object;
             freeChunk(&fn->chunk);
             FREE(ObjFunction, object);
+            break;
         default:
             printf("Free not implemented for %d", object->type);
             exit(1);
