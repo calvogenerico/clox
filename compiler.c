@@ -61,6 +61,7 @@ static void number(bool canAssign);
 static void string(bool canAssign);
 static void literal(bool canAssign);
 static void variable(bool canAssign);
+static void and_(bool canAssign);
 
 static void expression();
 static void statement();
@@ -90,7 +91,7 @@ ParseRule rules[] = {
     [TOKEN_IDENTIFIER]    = {variable       , NULL, PREC_NONE},
     [TOKEN_STRING]        = {string       , NULL, PREC_NONE},
     [TOKEN_NUMBER]        = {number     , NULL, PREC_NONE},
-    [TOKEN_AND]           = {NULL       , NULL, PREC_NONE},
+    [TOKEN_AND]           = {NULL       , and_, PREC_AND},
     [TOKEN_CLASS]         = {NULL       , NULL, PREC_NONE},
     [TOKEN_ELSE]          = {NULL       , NULL, PREC_NONE},
     [TOKEN_FALSE]         = {literal    , NULL, PREC_NONE},
@@ -553,6 +554,16 @@ static void defineVariable(uint8_t global) {
         return;
     }
     emitBytes(OP_DEFINE_GLOBAL, global);
+}
+
+static void and_(bool _canAssign) {
+    // If top of stack is falsey, and returns the second operand. That's
+    // why we pop the first value.
+    int endJump = emitJump(OP_JUMP_IF_FALSE);
+    emitByte(OP_POP);
+    parsePrecedence(PREC_AND);
+
+    patchJump(endJump);
 }
 
 static void varDeclaration() {
