@@ -26,6 +26,9 @@ static void freeObject(Obj* object) {
             FREE_ARRAY(char, string->chars, string->length + 1);
             FREE(ObjString, object);
             break;
+        case OBJ_CLOSURE:
+            FREE(ObjClosure, object);
+            break;
         case OBJ_FUNCTION:
             ObjFunction* fn = (ObjFunction*) object;
             freeChunk(&fn->chunk);
