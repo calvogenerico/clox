@@ -3,12 +3,11 @@ fun main() {
   if (true) {
     var x1 = "x1";
     fun cosito () {
-        print x1;
         return x1;
     }
+
     f2 = cosito;
   }
-
   return f2;
 }
 
