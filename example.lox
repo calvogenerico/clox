@@ -1,9 +1,15 @@
-fun hola() {
-    var x = "desde hola";
-    fun coso() {
-        print x;
+fun main() {
+  var f2;
+  if (true) {
+    var x1 = "x1";
+    fun cosito () {
+        print x1;
+        return x1;
     }
-    coso();
+    f2 = cosito;
+  }
+
+  return f2;
 }
 
-hola();
+print main()();

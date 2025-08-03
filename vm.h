@@ -20,6 +20,7 @@ typedef struct {
     Value stack[STACK_MAX];
     Value* stackTop; // Points to where the next element is going to be
     Table strings;
+    ObjUpvalue* openUpvalues;
     Obj* objects;
     Table globals;
 } VM;
