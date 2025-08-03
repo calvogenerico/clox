@@ -7,7 +7,17 @@
 
 #include <stdio.h>
 
-void* reallocate(void* pointer, size_t _oldSize, size_t newSize) {
+#ifdef DEBUG_LOG_GC
+#include "debug.h"
+#endif
+
+void* reallocate(void* pointer, size_t oldSize, size_t newSize) {
+    if (newSize > oldSize) {
+#ifdef DEBUG_STRESS_GC
+        collectGarbage();
+#endif
+    }
+
     if (newSize == 0) {
         free(pointer);
         return NULL;
@@ -19,10 +29,23 @@ void* reallocate(void* pointer, size_t _oldSize, size_t newSize) {
     return result;
 }
 
+void collectGarbage() {
+#ifdef DEBUG_LOG_GC
+    printf("-- gc begin\n");
+#endif
+
+#ifdef DEBUG_LOG_GC
+    printf("-- gc end\n");
+#endif
+}
+
 static void freeObject(Obj* object) {
+#ifdef DEBUG_LOG_GC
+    printf("%p free type %d\n", (void*)object, object->type);
+#endif
     switch (object->type) {
         case OBJ_STRING:
-            ObjString* string = (ObjString*) object;
+            ObjString* string = (ObjString*)object;
             FREE_ARRAY(char, string->chars, string->length + 1);
             FREE(ObjString, object);
             break;
@@ -30,13 +53,12 @@ static void freeObject(Obj* object) {
             FREE(ObjUpvalue, object);
             break;
         case OBJ_CLOSURE:
-            ObjClosure* closure = (ObjClosure*) object;
-            FREE_ARRAY(ObjUpvalue*, closure->upvalues,
-                 closure->upvalueCount);
+            ObjClosure* closure = (ObjClosure*)object;
+            FREE_ARRAY(ObjUpvalue*, closure->upvalues, closure->upvalueCount);
             FREE(ObjClosure, closure);
             break;
         case OBJ_FUNCTION:
-            ObjFunction* fn = (ObjFunction*) object;
+            ObjFunction* fn = (ObjFunction*)object;
             freeChunk(&fn->chunk);
             FREE(ObjFunction, object);
             break;
