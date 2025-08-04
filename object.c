@@ -128,7 +128,7 @@ void printObject(Value value) {
             printf("<native fn>");
             break;
         default:
-            printf("Print for value: %d not implemented\n", value.type);
+            printf("Print for value: %d not implemented\n", OBJ_TYPE(value));
             exit(1);
     }
 }

@@ -30,6 +30,38 @@ void* reallocate(void* pointer, size_t oldSize, size_t newSize) {
     return result;
 }
 
+static void freeObject(Obj* object) {
+#ifdef DEBUG_LOG_GC
+    printf("%p free type %d\n", (void*)object, object->type);
+#endif
+    switch (object->type) {
+        case OBJ_STRING:
+            ObjString* string = (ObjString*)object;
+            FREE_ARRAY(char, string->chars, string->length + 1);
+            FREE(ObjString, object);
+            break;
+        case OBJ_UPVALUE:
+            FREE(ObjUpvalue, object);
+            break;
+        case OBJ_CLOSURE:
+            ObjClosure* closure = (ObjClosure*)object;
+            FREE_ARRAY(ObjUpvalue*, closure->upvalues, closure->upvalueCount);
+            FREE(ObjClosure, closure);
+            break;
+        case OBJ_FUNCTION:
+            ObjFunction* fn = (ObjFunction*)object;
+            freeChunk(&fn->chunk);
+            FREE(ObjFunction, object);
+            break;
+        case OBJ_NATIVE:
+            FREE(ObjNative, object);
+            break;
+        default:
+            printf("Free not implemented for %d", object->type);
+            exit(1);
+    }
+}
+
 void markObject(Obj* object) {
     if (object == NULL)
         return;
@@ -67,7 +99,10 @@ static void markArray(ValueArray* array) {
 }
 
 static void markRoots() {
+    printf("Mark roots %d, %d\n", vm.stack, vm.stackTop);
     for (Value* slot = vm.stack; slot < vm.stackTop; slot++) {
+        printf("slot: %d\n", slot);
+        // printValue(*slot);
         markValue(*slot);
     }
 
@@ -92,18 +127,20 @@ static void blackenObject(Obj* object) {
     printf("\n");
 #endif
     switch (object->type) {
-        case OBJ_CLOSURE:
+        case OBJ_CLOSURE: {
             ObjClosure* closure = (ObjClosure*)object;
             markObject((Obj*)closure->function);
             for (int i = 0; i < closure->upvalueCount; i++) {
                 markObject((Obj*)closure->upvalues[i]);
             }
             break;
-        case OBJ_FUNCTION:
+        }
+        case OBJ_FUNCTION: {
             ObjFunction* function = (ObjFunction*)object;
             markObject((Obj*)function->name);
             markArray(&function->chunk.constants);
             break;
+        }
         case OBJ_UPVALUE:
             markValue(((ObjUpvalue*)object)->closed);
             break;
@@ -120,47 +157,38 @@ static void traceReferences() {
     }
 }
 
+static void sweep() {
+    Obj* previous = NULL;
+    Obj* object = vm.objects;
+    while (object != NULL) {
+        if (object->isMarked) {
+            object->isMarked = false;
+            previous = object;
+            object = object->next;
+        } else {
+            Obj* unreached = object;
+            object = object->next;
+            if (previous != NULL) {
+                previous->next = object;
+            } else {
+                vm.objects = object;
+            }
+            freeObject(unreached);
+        }
+    }
+}
+
 void collectGarbage() {
 #ifdef DEBUG_LOG_GC
     printf("-- gc begin\n");
 #endif
     markRoots();
     traceReferences();
+    tableRemoveWhite(&vm.strings);
+    sweep();
 #ifdef DEBUG_LOG_GC
     printf("-- gc end\n");
 #endif
-}
-
-static void freeObject(Obj* object) {
-#ifdef DEBUG_LOG_GC
-    printf("%p free type %d\n", (void*)object, object->type);
-#endif
-    switch (object->type) {
-        case OBJ_STRING:
-            ObjString* string = (ObjString*)object;
-            FREE_ARRAY(char, string->chars, string->length + 1);
-            FREE(ObjString, object);
-            break;
-        case OBJ_UPVALUE:
-            FREE(ObjUpvalue, object);
-            break;
-        case OBJ_CLOSURE:
-            ObjClosure* closure = (ObjClosure*)object;
-            FREE_ARRAY(ObjUpvalue*, closure->upvalues, closure->upvalueCount);
-            FREE(ObjClosure, closure);
-            break;
-        case OBJ_FUNCTION:
-            ObjFunction* fn = (ObjFunction*)object;
-            freeChunk(&fn->chunk);
-            FREE(ObjFunction, object);
-            break;
-        case OBJ_NATIVE:
-            FREE(ObjNative, object);
-            break;
-        default:
-            printf("Free not implemented for %d", object->type);
-            exit(1);
-    }
 }
 
 void freeObjects() {
