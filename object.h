@@ -16,6 +16,7 @@ typedef enum {
 struct Obj {
     ObjType type;
     Obj* next;
+    bool isMarked;
 };
 
 typedef Value (*NativeFn)(int argCount, Value* args);
