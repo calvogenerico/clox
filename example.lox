@@ -1,14 +1,15 @@
-fun main() {
-  var f2;
-  if (true) {
-    var x1 = "x1";
-    fun cosito () {
-        return x1;
-    }
-
-    f2 = cosito;
+fun concatMany(prefix, prefix2) {
+  var i = 0;
+  var res = prefix;
+  while (i < 50) {
+    var s = prefix2 + numberToString(i);
+    res = res + " " + s;
+    i = i + 1;
   }
-  return f2;
+  return res;
 }
 
-print main()();
+print concatMany("test1: ", "1-");
+print concatMany("test2: ", "2-");
+print concatMany("test3: ", "3-");
+print concatMany("test4: ", "4-");

@@ -11,13 +11,34 @@
 
 #include "memory.h"
 
+#include <math.h>
 #include <stdlib.h>
 #include <time.h>
 
 VM vm;
+static void runtimeError(const char* format, ...);
 
 static Value clockNative(int argCount, Value* args) {
     return NUMBER_VAL((double)clock() / CLOCKS_PER_SEC);
+}
+
+static Value numberToString(int argCount, Value* args) {
+    if (argCount != 1) {
+        runtimeError("Invalid amount of arguments");
+        return NIL_VAL;
+    }
+    double number = AS_NUMBER(*args);
+    char buf[64];
+
+    if (floor(number) == number) {
+        snprintf(buf, 64, "%.0f", number);
+    } else {
+        snprintf(buf, 64, "%.4f", number);
+    }
+
+    int len = (int)strlen(buf);
+    ObjString* objStr = copyString(buf, len);
+    return OBJ_VAL(objStr);
 }
 
 static void resetStack() {
@@ -142,6 +163,7 @@ void initVM() {
     initTable(&vm.strings);
     // add native functions
     defineNative("clock", clockNative);
+    defineNative("numberToString", numberToString);
 }
 
 void freeVM() {
@@ -156,16 +178,18 @@ bool isFalsey(Value val) {
 }
 
 void concatenate() {
-    ObjString* b = AS_STRING(pop());
-    ObjString* a = AS_STRING(pop());
+    ObjString* b = AS_STRING(peek(0));
+    ObjString* a = AS_STRING(peek(1));
 
     int length = a->length + b->length;
-    char* chars = ALLOCATE(char, length);
+    char* chars = ALLOCATE(char, length + 1);
     memcpy(chars, a->chars, a->length);
     memcpy(chars + a->length, b->chars, b->length);
     chars[length] = '\0';
 
     ObjString* result = takeString(chars, length);
+    pop();
+    pop();
     push(OBJ_VAL(result));
 }
 

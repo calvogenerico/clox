@@ -23,3 +23,4 @@ add_executable(clox main.c
         object.c
         table.h
         table.c)
+target_link_libraries(clox PRIVATE m)
