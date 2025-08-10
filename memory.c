@@ -54,6 +54,10 @@ static void freeObject(Obj* object) {
             FREE_ARRAY(ObjUpvalue*, closure->upvalues, closure->upvalueCount);
             FREE(ObjClosure, closure);
             break;
+        case OBJ_CLASS: {
+            FREE(ObjClass, object);
+            break;
+        }
         case OBJ_FUNCTION:
             ObjFunction* fn = (ObjFunction*)object;
             freeChunk(&fn->chunk);
@@ -141,6 +145,11 @@ static void blackenObject(Obj* object) {
             }
             break;
         }
+        case OBJ_CLASS: {
+            ObjClass* klass = (ObjClass*)object;
+            markObject((Obj*)klass->name);
+            break;
+        }
         case OBJ_FUNCTION: {
             ObjFunction* function = (ObjFunction*)object;
             markObject((Obj*)function->name);
@@ -200,7 +209,6 @@ void collectGarbage() {
          before - vm.bytesAllocated, before, vm.bytesAllocated,
          vm.nextGC);
 #endif
-
 }
 
 void freeObjects() {

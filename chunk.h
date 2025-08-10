@@ -12,6 +12,7 @@ typedef enum {
     OP_FALSE,
     OP_RETURN,
     OP_POP,
+    // Variables
     OP_GET_LOCAL,
     OP_SET_LOCAL,
     OP_DEFINE_GLOBAL,
@@ -37,7 +38,9 @@ typedef enum {
     OP_JUMP_IF_FALSE,
     OP_LOOP,
     OP_CALL,
+    // Declarations
     OP_CLOSURE,
+    OP_CLASS
 } OpCode;
 
 typedef struct {

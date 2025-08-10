@@ -9,6 +9,9 @@ fun concatMany(prefix, prefix2) {
   return res;
 }
 
+class Coso {
+}
+
 print concatMany("test1: ", "1-");
 print concatMany("test2: ", "2-");
 print concatMany("test3: ", "3-");

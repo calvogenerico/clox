@@ -85,7 +85,6 @@ static void variable(bool canAssign);
 static void and_(bool canAssign);
 static void or_(bool canAssign);
 static void call(bool canAssign);
-
 static void expression();
 static void statement();
 static void declaration();
@@ -300,7 +299,7 @@ static void endScope() {
     while (current->localCount > 0 &&
            current->locals[current->localCount - 1].depth >
                current->scopeDepth) {
-        if (current->locals[current->localCount -1].isCaptured) {
+        if (current->locals[current->localCount - 1].isCaptured) {
             emitByte(OP_CLOSE_UPVALUE);
         } else {
             emitByte(OP_POP);
@@ -386,17 +385,17 @@ static void binary(bool canAssign) {
     }
 }
 
-static void grouping() {
+static void grouping(bool canAssign) {
     expression();
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
 }
 
-static void number() {
+static void number(bool canAssign) {
     double value = strtod(parser.previous.start, NULL);
     emitConstant(NUMBER_VAL(value));
 }
 
-static void string() {
+static void string(bool canAssign) {
     emitConstant(OBJ_VAL(
         copyString(parser.previous.start + 1, parser.previous.length - 2)));
 }
@@ -479,7 +478,7 @@ static void variable(bool canAssign) {
     namedVariable(parser.previous, canAssign);
 }
 
-static void literal() {
+static void literal(bool canAssign) {
     switch (parser.previous.type) {
         case TOKEN_TRUE:
             emitByte(OP_TRUE);
@@ -702,26 +701,6 @@ static void funDeclaration() {
     defineVariable(global);
 }
 
-static void statement() {
-    if (match(TOKEN_PRINT)) {
-        printStatement();
-    } else if (match(TOKEN_IF)) {
-        ifStatement();
-    } else if (match(TOKEN_RETURN)) {
-        returnStatement();
-    } else if (match(TOKEN_WHILE)) {
-        whileStatement();
-    } else if (match(TOKEN_FOR)) {
-        forStatement();
-    } else if (match(TOKEN_LEFT_BRACE)) {
-        beginScope();
-        block();
-        endScope();
-    } else {
-        expressionStatement();
-    }
-}
-
 static void addLocal(Token name) {
     if (current->localCount == UINT8_COUNT) {
         error("Too many local variables in function.");
@@ -751,6 +730,38 @@ static void declareVariable() {
     }
 
     addLocal(*name);
+}
+
+static void classDeclaration() {
+    consume(TOKEN_IDENTIFIER, "Expected class name");
+    uint8_t nameConstant = identifierConstant(&parser.previous);
+    declareVariable();
+
+    emitBytes(OP_CLASS, nameConstant);
+    defineVariable(nameConstant);
+
+    consume(TOKEN_LEFT_BRACE, "Expected '{' after class name");
+    consume(TOKEN_RIGHT_BRACE, "Expected '}' after class name");
+}
+
+static void statement() {
+    if (match(TOKEN_PRINT)) {
+        printStatement();
+    } else if (match(TOKEN_IF)) {
+        ifStatement();
+    } else if (match(TOKEN_RETURN)) {
+        returnStatement();
+    } else if (match(TOKEN_WHILE)) {
+        whileStatement();
+    } else if (match(TOKEN_FOR)) {
+        forStatement();
+    } else if (match(TOKEN_LEFT_BRACE)) {
+        beginScope();
+        block();
+        endScope();
+    } else {
+        expressionStatement();
+    }
 }
 
 static uint8_t parseVariable(char* errorMsg) {
@@ -834,7 +845,9 @@ static void varDeclaration() {
 }
 
 static void declaration() {
-    if (match(TOKEN_FUN)) {
+    if (match(TOKEN_CLASS)) {
+        classDeclaration();
+    } else if (match(TOKEN_FUN)) {
         funDeclaration();
     } else if (match(TOKEN_VAR)) {
         varDeclaration();

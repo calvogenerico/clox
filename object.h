@@ -7,6 +7,7 @@
 
 typedef enum {
     OBJ_CLOSURE,
+    OBJ_CLASS,
     OBJ_FUNCTION,
     OBJ_STRING,
     OBJ_UPVALUE,
@@ -55,7 +56,13 @@ typedef struct {
     int upvalueCount;
 } ObjClosure;
 
+typedef struct {
+    Obj obj;
+    ObjString* name;
+} ObjClass;
+
 ObjClosure* newClosure(ObjFunction* function);
+ObjClass* newClass(ObjString* name);
 ObjFunction* newFunction();
 ObjNative* newNative(NativeFn function);
 ObjString* takeString(char* chars, int length);
@@ -71,12 +78,14 @@ static inline bool isObjType(Value value, ObjType type) {
 #define OBJ_TYPE(value) (AS_OBJ(value)->type)
 #define IS_STRING(value) isObjType(value, OBJ_STRING)
 #define IS_CLOSURE(value) isObjType(value, OBJ_CLOSURE)
+#define IS_CLASS(value) isObjType(value, OBJ_CLASS)
 #define IS_FUNCTION(value) isObjType(value, OBJ_FUNCTION)
 #define IS_NATIVE(value) isObjType(value, OBJ_NATIVE)
 
 #define AS_STRING(value) ((ObjString*)AS_OBJ(value))
 #define AS_CSTRING(value) (((ObjString*)AS_OBJ(value))->chars)
 #define AS_CLOSURE(value) ((ObjClosure*)AS_OBJ(value))
+#define AS_CLASS(value) ((ObjClass*)AS_OBJ(value))
 #define AS_FUNCTION(value) ((ObjFunction*)AS_OBJ(value))
 #define AS_NATIVE(value) (((ObjNative*)AS_OBJ(value))->function)
 

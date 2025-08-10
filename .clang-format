@@ -7,6 +7,7 @@ IndentWidth: 4
 SpacesInContainerLiterals: true
 Cpp11BracedListStyle: false
 PointerAlignment: Left
+SpaceAfterCStyleCast: false
 
 IndentCaseLabels: true
 BraceWrapping:

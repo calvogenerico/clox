@@ -14,9 +14,9 @@ static Obj* allocateObject(size_t size, ObjType type) {
     object->next = vm.objects;
     object->isMarked = false;
     vm.objects = object;
-    #ifdef DEBUG_LOG_GC
-        printf("%p allocate %zu for %d\n", (void*)object, size, type);
-    #endif
+#ifdef DEBUG_LOG_GC
+    printf("%p allocate %zu for %d\n", (void*)object, size, type);
+#endif
     return object;
 }
 
@@ -44,8 +44,7 @@ static ObjString* allocateString(char* chars, int length, uint32_t hash) {
 }
 
 ObjClosure* newClosure(ObjFunction* function) {
-    ObjUpvalue** upvalues = ALLOCATE(ObjUpvalue*,
-                                       function->upvalueCount);
+    ObjUpvalue** upvalues = ALLOCATE(ObjUpvalue*, function->upvalueCount);
     for (int i = 0; i < function->upvalueCount; i++) {
         upvalues[i] = NULL;
     }
@@ -55,6 +54,11 @@ ObjClosure* newClosure(ObjFunction* function) {
     closure->upvalues = upvalues;
     closure->upvalueCount = function->upvalueCount;
     return closure;
+}
+
+ObjClass* newClass(ObjString* name) {
+    ObjClass* klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
+    klass->name = name;
 }
 
 ObjFunction* newFunction() {
@@ -74,8 +78,7 @@ ObjNative* newNative(NativeFn function) {
 
 ObjString* takeString(char* chars, int length) {
     uint32_t hash = hashString(chars, length);
-    ObjString* interned = tableFindString(&vm.strings, chars, length,
-                                        hash);
+    ObjString* interned = tableFindString(&vm.strings, chars, length, hash);
     if (interned != NULL) {
         FREE_ARRAY(char, chars, length + 1);
         return interned;
@@ -103,7 +106,6 @@ ObjUpvalue* newUpvalue(Value* slot) {
     return upvalue;
 }
 
-
 static void printFunction(ObjFunction* fn) {
     if (fn->name == NULL) {
         printf("<script>");
@@ -117,6 +119,8 @@ void printObject(Value value) {
         case OBJ_CLOSURE:
             printFunction(AS_CLOSURE(value)->function);
             break;
+        case OBJ_CLASS:
+            printf("%s", AS_CLASS(value)->name->chars);
         case OBJ_FUNCTION:
             printFunction(AS_FUNCTION(value));
             break;
