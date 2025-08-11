@@ -20,6 +20,8 @@ typedef enum {
     OP_SET_UPVALUE,
     OP_GET_GLOBAL,
     OP_SET_GLOBAL,
+    OP_GET_PROPERTY,
+    OP_SET_PROPERTY,
     OP_CLOSE_UPVALUE,
     // Binary operations
     OP_ADD,

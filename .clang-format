@@ -8,6 +8,7 @@ SpacesInContainerLiterals: true
 Cpp11BracedListStyle: false
 PointerAlignment: Left
 SpaceAfterCStyleCast: false
+AlignConsecutiveMacros: true
 
 IndentCaseLabels: true
 BraceWrapping:

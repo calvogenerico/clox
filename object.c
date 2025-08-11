@@ -59,6 +59,14 @@ ObjClosure* newClosure(ObjFunction* function) {
 ObjClass* newClass(ObjString* name) {
     ObjClass* klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
     klass->name = name;
+    return klass;
+}
+
+ObjInstance* newInstance(ObjClass* klass) {
+    ObjInstance* instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE);
+    instance->klass = klass;
+    initTable(&instance->fields);
+    return instance;
 }
 
 ObjFunction* newFunction() {
@@ -90,7 +98,8 @@ ObjString* takeString(char* chars, int length) {
 ObjString* copyString(const char* chars, int length) {
     uint32_t hash = hashString(chars, length);
     ObjString* interned = tableFindString(&vm.strings, chars, length, hash);
-    if (interned) return interned;
+    if (interned)
+        return interned;
 
     char* heapChars = ALLOCATE(char, length + 1);
     memcpy(heapChars, chars, length);
@@ -124,6 +133,9 @@ void printObject(Value value) {
             break;
         case OBJ_FUNCTION:
             printFunction(AS_FUNCTION(value));
+            break;
+        case OBJ_INSTANCE:
+            printf("%s instance", AS_INSTANCE(value)->klass->name->chars);
             break;
         case OBJ_STRING:
             printf("%s", AS_CSTRING(value));

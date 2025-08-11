@@ -58,6 +58,12 @@ static void freeObject(Obj* object) {
             FREE(ObjClass, object);
             break;
         }
+        case OBJ_INSTANCE: {
+            ObjInstance* instance = (ObjInstance*)object;
+            freeTable(&instance->fields);
+            FREE(ObjInstance, instance);
+            break;
+        }
         case OBJ_FUNCTION:
             ObjFunction* fn = (ObjFunction*)object;
             freeChunk(&fn->chunk);
@@ -150,6 +156,12 @@ static void blackenObject(Obj* object) {
             markObject((Obj*)klass->name);
             break;
         }
+        case OBJ_INSTANCE: {
+            ObjInstance* instance = (ObjInstance*)object;
+            markObject((Obj*)instance->klass);
+            markTable(&instance->fields);
+            break;
+        }
         case OBJ_FUNCTION: {
             ObjFunction* function = (ObjFunction*)object;
             markObject((Obj*)function->name);
@@ -206,8 +218,7 @@ void collectGarbage() {
 #ifdef DEBUG_LOG_GC
     printf("-- gc end\n");
     printf("   collected %zu bytes (from %zu to %zu) next at %zu\n",
-         before - vm.bytesAllocated, before, vm.bytesAllocated,
-         vm.nextGC);
+           before - vm.bytesAllocated, before, vm.bytesAllocated, vm.nextGC);
 #endif
 }
 
