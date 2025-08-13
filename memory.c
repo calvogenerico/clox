@@ -66,6 +66,10 @@ static void freeObject(Obj* object) {
             FREE(ObjInstance, instance);
             break;
         }
+        case OBJ_BOUND_METHOD: {
+            FREE(ObjBoundMethod, object);
+            break;
+        }
         case OBJ_FUNCTION:
             ObjFunction* fn = (ObjFunction*)object;
             freeChunk(&fn->chunk);
@@ -163,6 +167,12 @@ static void blackenObject(Obj* object) {
             ObjInstance* instance = (ObjInstance*)object;
             markObject((Obj*)instance->klass);
             markTable(&instance->fields);
+            break;
+        }
+        case OBJ_BOUND_METHOD: {
+            ObjBoundMethod* method = (ObjBoundMethod*)object;
+            markValue(method->receiver);
+            markObject((Obj*)method->method);
             break;
         }
         case OBJ_FUNCTION: {
