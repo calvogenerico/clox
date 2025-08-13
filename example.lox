@@ -1,8 +1,13 @@
 class Scone {
   topping(first, second) {
-    print "scone with " + first + " and " + second;
+    print "scone with " + first + " and " + second + " " + numberToString(this.coso);
+    this.coso = this.coso + 1;
   }
 }
 
 var scone = Scone();
+scone.coso = 1;
+scone.topping("berries", "cream");
+scone.topping("berries", "cream");
+scone.topping("berries", "cream");
 scone.topping("berries", "cream");

@@ -26,7 +26,7 @@ typedef struct {
     bool isLocal;
 } Upvalue;
 
-typedef enum { TYPE_FUNCTION, TYPE_SCRIPT } FunctionType;
+typedef enum { TYPE_FUNCTION, TYPE_METHOD, TYPE_SCRIPT } FunctionType;
 
 typedef struct Compiler {
     struct Compiler* enclosing;
@@ -37,6 +37,10 @@ typedef struct Compiler {
     Upvalue upvalues[UINT8_COUNT];
     int scopeDepth;
 } Compiler;
+
+typedef struct ClassCompiler {
+    struct ClassCompiler* enclosing;
+} ClassCompiler;
 
 typedef struct {
     Token current;
@@ -86,6 +90,7 @@ static void and_(bool canAssign);
 static void or_(bool canAssign);
 static void call(bool canAssign);
 static void dot(bool canAssign);
+static void this_(bool canAssign);
 static void expression();
 static void statement();
 static void declaration();
@@ -130,7 +135,7 @@ ParseRule rules[] = {
     [TOKEN_PRINT]         = {NULL       , NULL, PREC_NONE},
     [TOKEN_RETURN]        = {NULL       , NULL, PREC_NONE},
     [TOKEN_SUPER]         = {NULL       , NULL, PREC_NONE},
-    [TOKEN_THIS]          = {NULL       , NULL, PREC_NONE},
+    [TOKEN_THIS]          = {this_      , NULL, PREC_NONE},
     [TOKEN_TRUE]          = {literal    , NULL, PREC_NONE},
     [TOKEN_VAR]           = {NULL       , NULL, PREC_NONE},
     [TOKEN_WHILE]         = {NULL       , NULL, PREC_NONE},
@@ -140,6 +145,7 @@ ParseRule rules[] = {
 // clang-format on
 
 Compiler* current = NULL;
+ClassCompiler* currentClass = NULL;
 Parser parser;
 Chunk* compilingChunk;
 
@@ -275,8 +281,13 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
     Local* local = &current->locals[current->localCount++];
     local->depth = 0;
     local->isCaptured = false;
-    local->name.start = "";
-    local->name.length = 0;
+    if (type != TYPE_FUNCTION) {
+        local->name.start = "this";
+        local->name.length = 4;
+    } else {
+        local->name.start = "";
+        local->name.length = 0;
+    }
 }
 
 static ObjFunction* endCompiler() {
@@ -700,7 +711,7 @@ static void method() {
     Token className = parser.previous;
     uint8_t constant = identifierConstant(&parser.previous);
 
-    FunctionType type = TYPE_FUNCTION;
+    FunctionType type = TYPE_METHOD;
     function(type);
 
     emitBytes(OP_METHOD, constant);
@@ -750,6 +761,11 @@ static void classDeclaration() {
     uint8_t nameConstant = identifierConstant(&parser.previous);
     declareVariable();
 
+    ClassCompiler classCompiler;
+    classCompiler.enclosing = currentClass;
+    currentClass = &classCompiler;
+
+
     emitBytes(OP_CLASS, nameConstant);
     defineVariable(nameConstant);
 
@@ -762,6 +778,8 @@ static void classDeclaration() {
 
     consume(TOKEN_RIGHT_BRACE, "Expected '}' after class name");
     emitByte(OP_POP);
+
+    currentClass = currentClass->enclosing;
 }
 
 static void statement() {
@@ -861,6 +879,15 @@ static void dot(bool canAssign) {
     } else {
         emitBytes(OP_GET_PROPERTY, name);
     }
+}
+
+static void this_(bool canAssign) {
+    if (currentClass == NULL) {
+        error("Can't use 'this' outside of a class.");
+        return;
+    }
+
+    variable(false);
 }
 
 static void varDeclaration() {
