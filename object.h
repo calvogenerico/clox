@@ -61,6 +61,7 @@ typedef struct {
 typedef struct {
     Obj obj;
     ObjString* name;
+    Table methods;
 } ObjClass;
 
 typedef struct {
@@ -68,6 +69,12 @@ typedef struct {
     ObjClass* klass;
     Table fields;
 } ObjInstance;
+
+typedef struct {
+    Obj obj;
+    Value receiver;
+    ObjClosure* method;
+} ObjBoundMethod;
 
 ObjClosure* newClosure(ObjFunction* function);
 ObjClass* newClass(ObjString* name);

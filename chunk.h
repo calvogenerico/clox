@@ -42,7 +42,8 @@ typedef enum {
     OP_CALL,
     // Declarations
     OP_CLOSURE,
-    OP_CLASS
+    OP_CLASS,
+    OP_METHOD
 } OpCode;
 
 typedef struct {
