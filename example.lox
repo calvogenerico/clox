@@ -1,13 +1,16 @@
-class Scone {
-  topping(first, second) {
-    print "scone with " + first + " and " + second + " " + numberToString(this.coso);
-    this.coso = this.coso + 1;
+class CoffeeMaker {
+  init(coffee) {
+    this.coffee = coffee;
+    return;
+  }
+
+  brew() {
+    print "Enjoy your cup of " + this.coffee;
+
+    // No reusing the grounds!
+    this.coffee = nil;
   }
 }
 
-var scone = Scone();
-scone.coso = 1;
-scone.topping("berries", "cream");
-scone.topping("berries", "cream");
-scone.topping("berries", "cream");
-scone.topping("berries", "cream");
+var maker = CoffeeMaker("coffee and chicory");
+maker.brew();

@@ -26,7 +26,12 @@ typedef struct {
     bool isLocal;
 } Upvalue;
 
-typedef enum { TYPE_FUNCTION, TYPE_METHOD, TYPE_SCRIPT } FunctionType;
+typedef enum {
+    TYPE_FUNCTION,
+    TYPE_METHOD,
+    TYPE_INITIALIZER,
+    TYPE_SCRIPT
+} FunctionType;
 
 typedef struct Compiler {
     struct Compiler* enclosing;
@@ -247,7 +252,12 @@ static void patchJump(int offset) {
 }
 
 static void emitReturn() {
-    emitByte(OP_NIL);
+    if (current->type == TYPE_INITIALIZER) {
+        emitBytes(OP_GET_LOCAL, 0);
+    } else {
+        emitByte(OP_NIL);
+    }
+
     emitByte(OP_RETURN);
 }
 
@@ -605,6 +615,10 @@ static void returnStatement() {
     if (match(TOKEN_SEMICOLON)) {
         emitReturn();
     } else {
+        // This check is done here to allow early returns in initializers.
+        if (current->type == TYPE_INITIALIZER) {
+            error("Can't return a value from an initializer.");
+        }
         expression();
         consume(TOKEN_SEMICOLON, "Expect ';' after return value.");
         emitByte(OP_RETURN);
@@ -708,10 +722,13 @@ static void function(FunctionType type) {
 
 static void method() {
     consume(TOKEN_IDENTIFIER, "Expect method name.");
-    Token className = parser.previous;
     uint8_t constant = identifierConstant(&parser.previous);
 
-    FunctionType type = TYPE_METHOD;
+    bool isInitializer = parser.previous.length == 4 &&
+                         memcmp(parser.previous.start, "init", 4) == 0;
+
+    FunctionType type = isInitializer ? TYPE_INITIALIZER : TYPE_METHOD;
+
     function(type);
 
     emitBytes(OP_METHOD, constant);
@@ -764,7 +781,6 @@ static void classDeclaration() {
     ClassCompiler classCompiler;
     classCompiler.enclosing = currentClass;
     currentClass = &classCompiler;
-
 
     emitBytes(OP_CLASS, nameConstant);
     defineVariable(nameConstant);
