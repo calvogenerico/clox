@@ -1,16 +1,18 @@
-class CoffeeMaker {
-  init(coffee) {
-    this.coffee = coffee;
-    return;
-  }
 
-  brew() {
-    print "Enjoy your cup of " + this.coffee;
-
-    // No reusing the grounds!
-    this.coffee = nil;
-  }
+class Coso {
+    m1 () {
+        return "from m1";
+    }
 }
 
-var maker = CoffeeMaker("coffee and chicory");
-maker.brew();
+
+class Cosito < Coso {
+    m2() {
+        return "m2";
+    }
+}
+
+var c = Cosito();
+print c.m2();
+print c.m2();
+print 1 +1 ;

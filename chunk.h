@@ -44,6 +44,7 @@ typedef enum {
     // Declarations
     OP_CLOSURE,
     OP_CLASS,
+    OP_INHERIT,
     OP_METHOD
 } OpCode;
 
