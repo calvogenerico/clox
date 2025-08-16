@@ -1,18 +1,18 @@
 
 class Coso {
     m1 () {
-        return "from m1";
+        return "Coso: m1";
     }
 }
 
 
 class Cosito < Coso {
     m2() {
-        return "m2";
+        return "Cosito: m2";
     }
 }
 
 var c = Cosito();
-print c.m2();
-print c.m2();
+print c.m1();
+print c.m1();
 print 1 +1 ;
