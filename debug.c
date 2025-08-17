@@ -86,6 +86,8 @@ int disassembleInstruction(Chunk* chunk, int offset) {
             return constantInstruction("OP_GET_GLOBAL", chunk, offset);
         case OP_SET_GLOBAL:
             return constantInstruction("OP_SET_GLOBAL", chunk, offset);
+        case OP_GET_SUPER:
+            return constantInstruction("OP_GET_SUPER", chunk, offset);
         case OP_CLOSE_UPVALUE:
             return constantInstruction("OP_CLOSE_UPVALUE", chunk, offset);
         case OP_EQUAL:
@@ -120,6 +122,8 @@ int disassembleInstruction(Chunk* chunk, int offset) {
             return byteInstruction("OP_CALL", chunk, offset);
         case OP_INVOKE:
             return invokeInstruction("OP_INVOKE", chunk, offset);
+        case OP_SUPER_INVOKE:
+            return invokeInstruction("OP_SUPER_INVOKE", chunk, offset);
         case OP_CLOSURE: {
             offset++;
             uint8_t constant = chunk->code[offset++];
