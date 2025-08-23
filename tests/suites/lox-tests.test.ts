@@ -11,11 +11,9 @@ const __dirname = dirname(__filename);
 type Context = {
     executor: LoxExecutor,
     paths: Map<string, string>,
-    compile: void
 }
 
 const it = baseIt.extend<Context>({
-    executor: new LoxExecutor(),
     paths: async ({}, use) => {
         const paths = new Map<string, string>();
         const lsOutput = await $`ls ${$.path(__dirname)}/lox-code`.text();
@@ -25,12 +23,14 @@ const it = baseIt.extend<Context>({
         })
         use(paths);
     },
-    compile: [
-        async ({executor}, use) => {
+    executor: [
+        async ({}, use) => {
+            const executor = new LoxExecutor();
             await executor.compile();
-            await use();
+            await use(executor);
+            await executor.tearDown();
         },
-        {auto: true, scope: 'worker'}
+        {auto: true, scope: 'file'}
     ]
 })
 
@@ -42,8 +42,8 @@ describe('Lox snippets', () => {
             expect(output).toEqual(expected);
         }
 
-        it('01-adition.lox', async ({executor, paths}) => {
-            await execFile(executor, paths, '01-adition.lox', '2\n10\n9');
+        it('01-add.lox', async ({executor, paths}) => {
+            await execFile(executor, paths, '01-add.lox', '2\n10\n9');
         });
 
         it('02-subtraction.lox', async ({executor, paths}) => {
@@ -57,7 +57,7 @@ describe('Lox snippets', () => {
             expect(ok).toBe(true);
         }
 
-        it('01-adition.lox', async ({executor, paths}) => await memCheck(executor, paths, '01-adition.lox'));
+        it('01-add.lox', async ({executor, paths}) => await memCheck(executor, paths, '01-add.lox'));
         it('02-subtraction.lox', async ({executor, paths}) => await memCheck(executor, paths, '02-subtraction.lox'));
     })
 })
