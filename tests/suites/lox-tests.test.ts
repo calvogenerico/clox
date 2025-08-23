@@ -34,14 +34,30 @@ const it = baseIt.extend<Context>({
     ]
 })
 
-describe("Lox snippets", () => {
-    it("01-adition.lox", async ({executor, paths}) => {
-        const output = await executor.run(paths.get('01-adition.lox')!);
-        expect(output).toEqual("2\n10\n9");
+describe('Lox snippets', () => {
+
+    describe('execution', () => {
+        async function execFile(executor: LoxExecutor, paths: Map<string, string>, file: string, expected: string) {
+            const output = await executor.run(paths.get(file)!);
+            expect(output).toEqual(expected);
+        }
+
+        it('01-adition.lox', async ({executor, paths}) => {
+            await execFile(executor, paths, '01-adition.lox', '2\n10\n9');
+        });
+
+        it('02-subtraction.lox', async ({executor, paths}) => {
+            await execFile(executor, paths, '02-subtraction.lox', '0\n-40\n40\n-3');
+        });
     });
 
-    it("02-subtraction.lox", async ({executor, paths}) => {
-        const output = await executor.run(paths.get('02-subtraction.lox')!);
-        expect(output).toEqual("0\n-40\n40\n-3");
-    });
+    describe('memory check with valgrind', async () => {
+        async function memCheck(executor: LoxExecutor, paths: Map<string, string>, file: string) {
+            const ok = await executor.memCheck(paths.get(file)!);
+            expect(ok).toBe(true);
+        }
+
+        it('01-adition.lox', async ({executor, paths}) => await memCheck(executor, paths, '01-adition.lox'));
+        it('02-subtraction.lox', async ({executor, paths}) => await memCheck(executor, paths, '02-subtraction.lox'));
+    })
 })

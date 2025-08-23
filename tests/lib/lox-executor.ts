@@ -36,4 +36,13 @@ export class LoxExecutor {
 
         return  $`${this.cloxPath!} ${absPath}`.text();
     }
+
+    async memCheck(absPath: string): Promise<boolean> {
+        const res = await $`valgrind --error-exitcode=1 --tool=memcheck --leak-check=full -q ${this.cloxPath!} ${absPath} > /dev/null`.noThrow();
+        if (res.code === 1) {
+            await $`valgrind --error-exitcode=1 --tool=memcheck --leak-check=full ${this.cloxPath!} ${absPath}`.noThrow();
+            return false;
+        }
+        return true;
+    }
 }
