@@ -1,0 +1,2 @@
+print true ? "true" : "false";
+print false ? "true" : "false";

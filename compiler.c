@@ -98,6 +98,8 @@ static void call(bool canAssign);
 static void dot(bool canAssign);
 static void this_(bool canAssign);
 static void super_(bool canAssign);
+static void ternary(bool canAssign);
+
 static void expression();
 static void statement();
 static void declaration();
@@ -113,6 +115,7 @@ ParseRule rules[] = {
     [TOKEN_LEFT_BRACE]    = {NULL       , NULL, PREC_NONE},
     [TOKEN_RIGHT_BRACE]   = {NULL       , NULL, PREC_NONE},
     [TOKEN_COMMA]         = {NULL       , NULL, PREC_NONE},
+    [TOKEN_COLON]         = {NULL       , NULL, PREC_NONE},
     [TOKEN_DOT]           = {NULL       , dot, PREC_CALL},
     [TOKEN_MINUS]         = {unary      , binary, PREC_TERM},
     [TOKEN_PLUS]          = {NULL       , binary, PREC_TERM},
@@ -127,8 +130,8 @@ ParseRule rules[] = {
     [TOKEN_GREATER_EQUAL] = {NULL       , binary, PREC_COMPARISON},
     [TOKEN_LESS]          = {NULL       , binary, PREC_COMPARISON},
     [TOKEN_LESS_EQUAL]    = {NULL       , binary, PREC_COMPARISON},
-    [TOKEN_IDENTIFIER]    = {variable       , NULL, PREC_NONE},
-    [TOKEN_STRING]        = {string       , NULL, PREC_NONE},
+    [TOKEN_IDENTIFIER]    = {variable   , NULL, PREC_NONE},
+    [TOKEN_STRING]        = {string     , NULL, PREC_NONE},
     [TOKEN_NUMBER]        = {number     , NULL, PREC_NONE},
     [TOKEN_AND]           = {NULL       , and_, PREC_AND},
     [TOKEN_CLASS]         = {NULL       , NULL, PREC_NONE},
@@ -141,13 +144,14 @@ ParseRule rules[] = {
     [TOKEN_OR]            = {NULL       , or_, PREC_OR},
     [TOKEN_PRINT]         = {NULL       , NULL, PREC_NONE},
     [TOKEN_RETURN]        = {NULL       , NULL, PREC_NONE},
-    [TOKEN_SUPER]         = {super_       , NULL, PREC_NONE},
+    [TOKEN_SUPER]         = {super_     , NULL, PREC_NONE},
     [TOKEN_THIS]          = {this_      , NULL, PREC_NONE},
     [TOKEN_TRUE]          = {literal    , NULL, PREC_NONE},
     [TOKEN_VAR]           = {NULL       , NULL, PREC_NONE},
     [TOKEN_WHILE]         = {NULL       , NULL, PREC_NONE},
     [TOKEN_ERROR]         = {NULL       , NULL, PREC_NONE},
     [TOKEN_EOF]           = {NULL       , NULL, PREC_NONE},
+    [TOKEN_QUESTION_MARK] = { NULL      , ternary, PREC_ASSIGNMENT },
 };
 // clang-format on
 
@@ -223,6 +227,7 @@ static void emitBytes(uint8_t byte1, uint8_t byte2) {
 
 static int emitJump(uint8_t instruction) {
     emitByte(instruction);
+    // Placeholder to eventually write the jump destination.
     emitByte(0xff);
     emitByte(0xff);
     return currentChunk()->count - 2;
@@ -619,6 +624,35 @@ static void ifStatement() {
     patchJump(elseJump);
 }
 
+static void ternary(bool _canAssign) {
+    // a  <-- guard expression. already parsed. result on top of stack.
+    // ? <-- already consumed.
+    // b <-- then expression. Needs to be present
+    // : <-- Needs to be present
+    // c <-- else empression. Needs to be present
+    // OP_JUMP_IF_FALSE does not clean the stack,
+    // so we add an OP_POP. If the condition is false, we
+    // jump directly to an OP_POP insterted just before the else block
+    //                     true    false
+    // OP_JUMP_IF_FALSE -----□-------□ (1)
+    // OP_POP      <---------┘       | (2)
+    // <then body>     always        | (3)
+    // OP_JUMP ----------□           | (4)
+    // OP_POP      <-----+-----------┘ (5)
+    // <else body>       | always      (6)
+    // ...rest     <-----┘             (7)
+    int thenJump = emitJump(OP_JUMP_IF_FALSE); // 1
+    emitByte(OP_POP); // 2
+    expression(); // 3
+    consume(TOKEN_COLON, "Missing colon for ternary operator");
+    int elseJump = emitJump(OP_JUMP); // 4
+
+    patchJump(thenJump);
+    emitByte(OP_POP); // 5
+    expression(); // 6
+    patchJump(elseJump); // 7
+}
+
 static void returnStatement() {
     if (current->type == TYPE_SCRIPT) {
         error("Can't return from top-level code.");
@@ -795,7 +829,8 @@ static void classDeclaration() {
 
     ClassCompiler classCompiler;
     classCompiler.enclosing = currentClass;
-    classCompiler.hasSuperclass = false; // If there is a super class it will be set later.
+    classCompiler.hasSuperclass =
+        false; // If there is a super class it will be set later.
     currentClass = &classCompiler;
 
     if (match(TOKEN_LESS)) {
@@ -967,7 +1002,6 @@ static void super_(bool canAssign) {
         namedVariable(syntheticToken("super"), false);
         emitBytes(OP_GET_SUPER, name);
     }
-
 }
 
 static void varDeclaration() {
