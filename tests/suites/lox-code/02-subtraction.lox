@@ -1,0 +1,4 @@
+print 12 - 12;
+print 10 - 50;
+print 50 - 10;
+print -1 - 2;
