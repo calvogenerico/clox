@@ -62,6 +62,14 @@ describe('Lox snippets', () => {
     it('03-ternary_operator.lox', async ({executor, paths}) =>
       await execFile(executor, paths, '03-ternary_operator.lox', repeatList(['ok'], 13) )
     );
+
+    it('04-bound-methods.lox', async ({executor, paths}) =>
+      await execFile(executor, paths, '04-bound-methods.lox', repeatList(['ok'], 2) )
+    );
+
+    it('05-strings_1.lox', async ({executor, paths}) =>
+      await execFile(executor, paths, '05-strings_1.lox', ['ok1', 'ok2', 'ok3', 'ok4', 'ok5', 'ok6', 'ok7', 'ok8', 'ok9'] )
+    );
   });
 
   describe('memory check with valgrind', async () => {
@@ -73,5 +81,7 @@ describe('Lox snippets', () => {
     it('01-add.lox', async ({executor, paths}) => await memCheck(executor, paths, '01-add.lox'));
     it('02-subtraction.lox', async ({executor, paths}) => await memCheck(executor, paths, '02-subtraction.lox'));
     it('03-ternary_operator.lox', async ({executor, paths}) => await memCheck(executor, paths, '03-ternary_operator.lox'));
+    it('04-bound-methods.lox', async ({executor, paths}) => await memCheck(executor, paths, '04-bound-methods.lox'));
+    it('05-strings_1.lox', async ({executor, paths}) => await memCheck(executor, paths, '05-strings_1.lox'));
   })
 })

@@ -1,0 +1,21 @@
+print "ok1";
+var a = "ok2";
+print a;
+print "o" + "k" + "3";
+var s = "o";
+print s + "k4";
+
+{
+  print "ok5";
+  var a = "ok6";
+  print a;
+  print "o" + "k" + "7";
+  var s = "o";
+  print s + "k8";
+
+  fun foo() {
+    return "ok9";
+  }
+
+  print foo();
+}

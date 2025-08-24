@@ -1,0 +1,11 @@
+class Foo {
+  m1() {
+    return "ok";
+  }
+}
+
+var instance = Foo();
+
+print instance.m1();
+var bounded = instance.m1;
+print bounded();

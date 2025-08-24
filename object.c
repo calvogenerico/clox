@@ -74,6 +74,7 @@ ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method) {
     ObjBoundMethod* instance = ALLOCATE_OBJ(ObjBoundMethod, OBJ_BOUND_METHOD);
     instance->receiver = receiver;
     instance->method = method;
+    return instance;
 }
 
 ObjFunction* newFunction() {
