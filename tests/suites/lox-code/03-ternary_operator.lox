@@ -17,3 +17,5 @@ print false ? "error" : returnOk();
 print returnTrue() ? "ok" : "error";
 print returnTrue() and true ? "ok" : "error";
 print returnTrue() and false ? "error" : "ok";
+print true ? true ? "ok" : "error" : "error";
+print true ? false ? "error" : "ok" : "error";
