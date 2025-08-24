@@ -1,5 +1,19 @@
-fun f() {
-  return "coso";
+fun returnOk() {
+  return "ok";
 }
 
-print true ? "hola" : 2 + 2;
+fun returnTrue() {
+  return true;
+}
+
+print true ? "ok" : "error";
+print false ? "error" : "ok";
+print 1 == 1 ? "ok" : "error";
+print 1 == 0 ? "error" : "ok";
+print true ? "o" + "k" : "error";
+print false ? "error" : "o" + "k";
+print true ? returnOk() : "error";
+print false ? "error" : returnOk();
+print returnTrue() ? "ok" : "error";
+print returnTrue() and true ? "ok" : "error";
+print returnTrue() and false ? "error" : "ok";

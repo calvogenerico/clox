@@ -30,15 +30,25 @@ const it = baseIt.extend<Context>({
       await use(executor);
       await executor.tearDown();
     },
-    {auto: true, scope: 'file'}
+    {auto: true, scope: 'worker'}
   ]
-})
+});
+
+function repeatList<T>(list: T[], times: number): T[] {
+  const res = new Array<T[]>(times);
+
+  for (let i = 0; i < times; i++) {
+    res[i] = list
+  }
+
+  return res.flat();
+}
 
 describe('Lox snippets', () => {
   describe('execution', () => {
     async function execFile(executor: LoxExecutor, paths: Map<string, string>, file: string, expected: string[]) {
       const output = await executor.run(paths.get(file)!);
-      expect(output).toEqual(expected.join('\n'));
+      expect(output.split('\n')).toEqual(expected);
     }
 
     it('01-add.lox', async ({executor, paths}) => {
@@ -50,7 +60,7 @@ describe('Lox snippets', () => {
     });
 
     it('03-ternary_operator.lox', async ({executor, paths}) =>
-      await execFile(executor, paths, '03-ternary_operator.lox', ['true', 'false'])
+      await execFile(executor, paths, '03-ternary_operator.lox', repeatList(['ok'], 13) )
     );
   });
 
@@ -62,5 +72,6 @@ describe('Lox snippets', () => {
 
     it('01-add.lox', async ({executor, paths}) => await memCheck(executor, paths, '01-add.lox'));
     it('02-subtraction.lox', async ({executor, paths}) => await memCheck(executor, paths, '02-subtraction.lox'));
+    it('03-ternary_operator.lox', async ({executor, paths}) => await memCheck(executor, paths, '03-ternary_operator.lox'));
   })
 })
