@@ -1,19 +1,27 @@
-fun returnOk() {
-  return "ok";
+fun main() {
+  var outerLimit = 300;
+  var innerLimit = 50;
+  var repeatsLimit = 30;
+
+  for (var i = 0; i < outerLimit; i = i + 1) {
+    for (var j = 0; j < outerLimit; j = j + 1) {
+      var i_str = numberToString(i);
+      var j_str = numberToString(j);
+      var step1 = i_str + "_" + j_str;
+      var step2 = step1 + step1;
+      var step3 = step2 + step2;
+      var step4 = "";
+
+      for (var repeats = 0; repeats < repeatsLimit; repeats = repeats + 1) {
+        step4 = step4 + step3;
+      }
+  //    print step4;
+    }
+  }
 }
 
-fun returnTrue() {
-  return true;
-}
-
-print true ? "ok" : "error";
-print false ? "error" : "ok";
-print 1 == 1 ? "ok" : "error";
-print 1 == 0 ? "error" : "ok";
-print true ? "o" + "k" : "error";
-print false ? "error" : "o" + "k";
-print true ? returnOk() : "error";
-print false ? "error" : returnOk();
-print returnTrue() ? "ok" : "error";
-print returnTrue() and true ? "ok" : "error";
-print returnTrue() and false ? "error" : "ok";
+print "starting...";
+var start = clock();
+main();
+var end = clock();
+print "Finished in: " + numberToString(end - start);
