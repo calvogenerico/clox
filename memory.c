@@ -121,10 +121,7 @@ static void markArray(ValueArray* array) {
 }
 
 static void markRoots() {
-    printf("Mark roots %d, %d\n", vm.stack, vm.stackTop);
     for (Value* slot = vm.stack; slot < vm.stackTop; slot++) {
-        printf("slot: %d\n", slot);
-        // printValue(*slot);
         markValue(*slot);
     }
 
