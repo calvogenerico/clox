@@ -83,5 +83,5 @@ describe('Lox snippets', () => {
     it('03-ternary_operator.lox', async ({executor, paths}) => await memCheck(executor, paths, '03-ternary_operator.lox'));
     it('04-bound-methods.lox', async ({executor, paths}) => await memCheck(executor, paths, '04-bound-methods.lox'));
     it('05-strings_1.lox', async ({executor, paths}) => await memCheck(executor, paths, '05-strings_1.lox'));
-  })
-})
+  });
+});
